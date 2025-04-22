@@ -1,71 +1,49 @@
-from enum import Enum
-
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
 User = get_user_model()
 
 
-class Role(Enum):
-    USER = 'user'
-    MODERATOR = 'moderator'
-    ADMIN = 'admin'
+class Title(models.Model):
+    """Модель произведения."""
 
-
-class CustomUser(AbstractUser):
-    """Кастомная модель пользователя."""
-
-    ROLE_CHOICES = [
-        (Role.USER.value, 'Пользователь'),
-        (Role.MODERATOR.value, 'Модератор'),
-        (Role.ADMIN.value, 'Администратор'),
-    ]
-    role = models.CharField(
-        verbose_name='Роль',
-        max_length=50,
-        choices=ROLE_CHOICES,
-        default=Role.USER.value,
+    name = models.CharField(
+        max_length=255, verbose_name='Название произведения'
     )
-    email = models.EmailField(
-        verbose_name='Адрес электронной почты', max_length=254, unique=True
-    )
-    bio = models.TextField(
-        verbose_name='Биография',
-        blank=True,
-    )
-
-    class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
-        return self.username
+        return self.name
 
 
 class Review(models.Model):
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
-        User, verbose_name='Автор отзыва',
-        on_delete=models.CASCADE, related_name='reviews')
+        User,
+        verbose_name='Автор отзыва',
+        on_delete=models.CASCADE,
+        related_name='reviews',
+    )
     title = models.ForeignKey(
-        Title, verbose_name='Произведение',
-        on_delete=models.CASCADE, related_name='reviews')
+        Title,
+        verbose_name='Произведение',
+        on_delete=models.CASCADE,
+        related_name='reviews',
+    )
     score = models.IntegerField(
         verbose_name='Оценка произведения',
         choices=[(i, str(i)) for i in range(1, 11)],
     )
     pub_date = models.DateTimeField(
-        verbose_name='Дата добавления', auto_now_add=True, db_index=True)
+        verbose_name='Дата добавления', auto_now_add=True, db_index=True
+    )
 
     class Meta:
         verbose_name = 'отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
             models.UniqueConstraint(
-                fields=['author', 'title'],
-                name='unique_author_title'
+                fields=['author', 'title'], name='unique_author_title'
             )
         ]
 

@@ -1,25 +1,17 @@
-from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 
 from reviews.models import Review
 from .permissions import IsAuthorOrReadOnly
-from .serializers import ReviewSerializer, UserSerializer, CommentSerializer
+from .serializers import ReviewSerializer, CommentSerializer
 
 
-User = get_user_model()
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    """Вьюсет для модели пользователя."""
-
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-    lookup_field = 'username'
+from reviews.models import Title
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Обрабатывает операции CRUD для модели Review."""
+
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrReadOnly,)
 
@@ -32,10 +24,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title = self.get_title()
-        serializer.save(
-            author=self.request.user,
-            title=title
-        )
+        serializer.save(author=self.request.user, title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
