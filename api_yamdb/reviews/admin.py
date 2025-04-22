@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import CustomUser, Review
+from .models import CustomUser, Review, Comment
 
 
 @admin.register(CustomUser)
@@ -18,3 +18,4 @@ class CustomUserAdmin(admin.ModelAdmin):
     
 admin.site.empty_value_display = 'Не задано'
 admin.site.register(Review)
+admin.site.register(Comment)
