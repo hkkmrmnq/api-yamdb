@@ -68,7 +68,7 @@ class Review(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     slug = models.SlugField(unique=True)
 
     def __str__(self):
