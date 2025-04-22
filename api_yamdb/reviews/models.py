@@ -43,12 +43,13 @@ class CustomUser(AbstractUser):
 class Review(models.Model):
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
-        User, verbose_name='Автор отзыва', 
+        User, verbose_name='Автор отзыва',
         on_delete=models.CASCADE, related_name='reviews')
     title = models.ForeignKey(
-        Title, verbose_name='Произведение', 
+        Title, verbose_name='Произведение',
         on_delete=models.CASCADE, related_name='reviews')
-    score = models.IntegerField(verbose_name='Оценка произведения', min_value=1, max_value=10)
+    score = models.IntegerField(
+        verbose_name='Оценка произведения', min_value=1, max_value=10)
     pub_date = models.DateTimeField(
         verbose_name='Дата добавления', auto_now_add=True, db_index=True)
 
@@ -61,6 +62,14 @@ class Review(models.Model):
                 name='unique_author_title'
             )
         ]
-    
+
     def __str__(self):
         return self.text
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
