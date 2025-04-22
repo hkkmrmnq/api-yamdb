@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import CustomUser
+from .models import CustomUser, Review
 
 
 @admin.register(CustomUser)
@@ -14,4 +14,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     )
     search_fields = ('username', 'first_name', 'last_name', 'email')
     list_filter = ('role',)
-    empty_value_display = '-пусто-'
+
+    
+admin.site.empty_value_display = 'Не задано'
+admin.site.register(Review)
