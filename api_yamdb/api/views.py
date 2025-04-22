@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 
-from reviews.models import Comment, Review
+from reviews.models import Review
 from .permissions import IsAuthorOrReadOnly
 from .serializers import ReviewSerializer, UserSerializer, CommentSerializer
 

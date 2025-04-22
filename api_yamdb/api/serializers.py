@@ -28,13 +28,12 @@ class UserSerializer(serializers.ModelSerializer):
             )
         return value
 
-      
+
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username',
         default=serializers.CurrentUserDefault()
     )
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
@@ -47,9 +46,6 @@ class ReviewSerializer(serializers.ModelSerializer):
                 message='Нельзя повторно оставить отзыв на это произведение'
             )
         ]
-
-    def get_rating(self, obj):
-        return obj.sum('source') / obj.count('source')
 
 
 class CommentSerializer(serializers.ModelSerializer):

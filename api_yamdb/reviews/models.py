@@ -53,7 +53,8 @@ class Review(models.Model):
         Title, verbose_name='Произведение',
         on_delete=models.CASCADE, related_name='reviews')
     score = models.IntegerField(
-        verbose_name='Оценка произведения', choices=[(i, str(i)) for i in range(1, 11)],
+        verbose_name='Оценка произведения',
+        choices=[(i, str(i)) for i in range(1, 11)],
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата добавления', auto_now_add=True, db_index=True)

@@ -15,7 +15,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'first_name', 'last_name', 'email')
     list_filter = ('role',)
 
-    
+
 admin.site.empty_value_display = 'Не задано'
 admin.site.register(Review)
 admin.site.register(Comment)
