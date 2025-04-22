@@ -54,7 +54,7 @@ class Title(models.Model):
         Genre,
         verbose_name='Жанры',
         related_name='titles',
-        through='Genre_title'
+        through='GenreTitle'
     )
 
     class Meta:
@@ -71,7 +71,7 @@ class Title(models.Model):
         return self.name
 
 
-class Genre_title(models.Model):
+class GenreTitle(models.Model):
     genre = models.ForeignKey(
         Genre,
         on_delete=models.DO_NOTHING,
