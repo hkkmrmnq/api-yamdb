@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+
 User = get_user_model()
 
 
@@ -129,6 +130,25 @@ class Review(models.Model):
                 fields=['author', 'title'], name='unique_author_title'
             )
         ]
+
+    def __str__(self):
+        return self.text
+
+      
+class Comment(models.Model):
+    text = models.TextField(verbose_name='Текст комментария')
+    author = models.ForeignKey(
+        User, verbose_name='Автор комментария',
+        on_delete=models.CASCADE, related_name='comments')
+    review = models.ForeignKey(
+        Review, verbose_name='Отзыв',
+        on_delete=models.CASCADE, related_name='comments')
+    pub_date = models.DateTimeField(
+        verbose_name='Дата добавления', auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
 
     def __str__(self):
         return self.text
