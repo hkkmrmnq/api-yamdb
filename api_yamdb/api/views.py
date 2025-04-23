@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 
+from reviews.models import Review
 from .permissions import IsAuthorOrReadOnly
-from .serializers import ReviewSerializer
+from .serializers import ReviewSerializer, CommentSerializer
+
 
 from reviews.models import Title
 
@@ -23,3 +25,27 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title = self.get_title()
         serializer.save(author=self.request.user, title=title)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """Обрабатывает операции CRUD для модели Comment."""
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthorOrReadOnly,)
+
+    def get_review(self):
+        title = get_object_or_404(Title, id=self.kwargs['title_id'])
+        return get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'),
+            title=title)
+
+    def get_queryset(self):
+        review = self.get_review()
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = self.get_review()
+        serializer.save(
+            author=self.request.user,
+            review=review
+        )
