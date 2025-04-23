@@ -1,14 +1,62 @@
 from django.contrib.auth import get_user_model
-from rest_framework import viewsets
+from django.core.cache import cache
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+from rest_framework_simplejwt.tokens import AccessToken
 
-from .serializers import UserSerializer
+from .emails import send_confirmation_email
+from .serializers import TokenSerializer, UserSerializer
+from .utils import create_confirmation_code
 
 User = get_user_model()
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(ModelViewSet):
     """Вьюсет для модели пользователя."""
 
     serializer_class = UserSerializer
     queryset = User.objects.all()
     lookup_field = 'username'
+    # TODO: permission_classes = (IsAdminOrReadOnly,)
+
+
+@api_view(['POST'])
+def signup(request):
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data['email']
+        username = serializer.validated_data['username']
+        confirmation_code = create_confirmation_code(email)
+        serializer.save(is_active=False)
+        send_confirmation_email(email, confirmation_code)
+        return Response(
+            {
+                'email': email,
+                'username': username,
+            },
+            status=status.HTTP_200_OK,
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def generate_token(request):
+    serializer = TokenSerializer(data=request.data)
+    if serializer.is_valid():
+        username = serializer.validated_data['username']
+        confirmation_code = serializer.validated_data['confirmation_code']
+        user = get_object_or_404(User, username=username)
+        expected_code = cache.get(f'confirmation_code_{user.email}')
+        if expected_code == confirmation_code:
+            user.is_active = True
+            user.save()
+            token = AccessToken.for_user(user)
+            return Response({'token': str(token)}, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Код подтверждения недействителен.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -23,3 +23,8 @@ class UserSerializer(serializers.ModelSerializer):
                 '"me" - недопустимое имя пользователя.'
             )
         return value
+
+
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)

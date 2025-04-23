@@ -1,17 +1,20 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-
 User = get_user_model()
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=255, unique=True,
-                            verbose_name='Наименование')
+    name = models.CharField(
+        max_length=255, unique=True, verbose_name='Наименование'
+    )
     slug = models.SlugField(
-        unique=True, verbose_name='Идентификатор',
-        help_text=('Идентификатор страницы для URL; разрешены '
-                   'символы латиницы, цифры, дефис и подчёркивание.')
+        unique=True,
+        verbose_name='Идентификатор',
+        help_text=(
+            'Идентификатор страницы для URL; разрешены '
+            'символы латиницы, цифры, дефис и подчёркивание.'
+        ),
     )
 
     class Meta:
@@ -23,12 +26,16 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=255, unique=True,
-                            verbose_name='Наименование')
+    name = models.CharField(
+        max_length=255, unique=True, verbose_name='Наименование'
+    )
     slug = models.SlugField(
-        unique=True, verbose_name='Идентификатор',
-        help_text=('Идентификатор страницы для URL; разрешены '
-                   'символы латиницы, цифры, дефис и подчёркивание.')
+        unique=True,
+        verbose_name='Идентификатор',
+        help_text=(
+            'Идентификатор страницы для URL; разрешены '
+            'символы латиницы, цифры, дефис и подчёркивание.'
+        ),
     )
 
     class Meta:
@@ -40,11 +47,8 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=255,
-                            verbose_name='Наименование')
-    year = models.IntegerField(
-        verbose_name='Год'
-    )
+    name = models.CharField(max_length=255, verbose_name='Наименование')
+    year = models.IntegerField(verbose_name='Год')
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
@@ -55,7 +59,7 @@ class Title(models.Model):
         Genre,
         verbose_name='Жанры',
         related_name='titles',
-        through='GenreTitle'
+        through='GenreTitle',
     )
 
     class Meta:
@@ -64,7 +68,7 @@ class Title(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'category', 'year'],
-                name='unique_name_category_year'
+                name='unique_name_category_year',
             )
         ]
 
@@ -91,8 +95,7 @@ class GenreTitle(models.Model):
         verbose_name_plural = 'жанры произведений'
         constraints = [
             models.UniqueConstraint(
-                fields=['genre', 'title'],
-                name='unique_genre_title'
+                fields=['genre', 'title'], name='unique_genre_title'
             )
         ]
 
@@ -134,17 +137,24 @@ class Review(models.Model):
     def __str__(self):
         return self.text
 
-      
+
 class Comment(models.Model):
     text = models.TextField(verbose_name='Текст комментария')
     author = models.ForeignKey(
-        User, verbose_name='Автор комментария',
-        on_delete=models.CASCADE, related_name='comments')
+        User,
+        verbose_name='Автор комментария',
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
     review = models.ForeignKey(
-        Review, verbose_name='Отзыв',
-        on_delete=models.CASCADE, related_name='comments')
+        Review,
+        verbose_name='Отзыв',
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
     pub_date = models.DateTimeField(
-        verbose_name='Дата добавления', auto_now_add=True, db_index=True)
+        verbose_name='Дата добавления', auto_now_add=True, db_index=True
+    )
 
     class Meta:
         verbose_name = 'комментарий'
