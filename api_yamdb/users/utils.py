@@ -15,7 +15,7 @@ def create_confirmation_code(email, length=6):
     cache.set(
         f'confirmation_code_{email}',
         str(confirmation_code),
-        155520000,  # 30 дней - для соответствия ТЗ
+        155520000,  # 30 дней - для (почти) соответствия ТЗ
         # settings.CACHE_TIMEOUT,
     )
     return ''.join(confirmation_code)
