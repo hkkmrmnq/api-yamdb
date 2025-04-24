@@ -30,40 +30,6 @@ class TitleViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
     serializer_class = TitleSerializer
 
-    def retrieve(self, request, pk=None):
-        try:
-            title = Title.objects.get(id=pk)
-            serializer = self.serializer_class(title)
-            return Response(serializer.data)
-        except Title.DoesNotExist:
-            return Response(status=404)
-
-    def create(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-
-    def update(self, request, pk=None):
-        try:
-            title = Title.objects.get(id=pk)
-            serializer = self.serializer_class(title, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=400)
-        except Title.DoesNotExist:
-            return Response(status=404)
-
-    def destroy(self, request, pk=None):
-        try:
-            title = Title.objects.get(id=pk)
-            title.delete()
-            return Response(status=204)
-        except Title.DoesNotExist:
-            return Response(status=404)
-
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """Обрабатывает операции CRUD для модели Review."""
