@@ -27,6 +27,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     """
     ViewSet для работы с произведениями
     """
+    queryset = Title.objects.all()
     permission_classes = (IsAuthorOrReadOnly,)
     serializer_class = TitleSerializer
 
