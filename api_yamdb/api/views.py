@@ -23,7 +23,7 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
 
 
-class TitleViewSet(viewsets.ViewSet):
+class TitleViewSet(viewsets.ModelViewSet):
     """
     ViewSet для работы с произведениями
     """
