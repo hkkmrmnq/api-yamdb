@@ -1,12 +1,68 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
+from rest_framework.response import Response
 
-from reviews.models import Review
 from .permissions import IsAuthorOrReadOnly
-from .serializers import ReviewSerializer, CommentSerializer
+from .serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    TitleSerializer
+)
+from reviews.models import Category, Genre, Title, Review
 
 
-from reviews.models import Title
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+class TitleViewSet(viewsets.ViewSet):
+    """
+    ViewSet для работы с произведениями
+    """
+    permission_classes = (IsAuthorOrReadOnly,)
+    serializer_class = TitleSerializer
+
+    def retrieve(self, request, pk=None):
+        try:
+            title = Title.objects.get(id=pk)
+            serializer = self.serializer_class(title)
+            return Response(serializer.data)
+        except Title.DoesNotExist:
+            return Response(status=404)
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+    def update(self, request, pk=None):
+        try:
+            title = Title.objects.get(id=pk)
+            serializer = self.serializer_class(title, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=400)
+        except Title.DoesNotExist:
+            return Response(status=404)
+
+    def destroy(self, request, pk=None):
+        try:
+            title = Title.objects.get(id=pk)
+            title.delete()
+            return Response(status=204)
+        except Title.DoesNotExist:
+            return Response(status=404)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
