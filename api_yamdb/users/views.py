@@ -117,7 +117,6 @@ def generate_token(request):
         confirmation_code = serializer.validated_data['confirmation_code']
         user = get_object_or_404(User, username=username)
         expected_code = cache.get(f'confirmation_code_{user.email}')
-        # expected_code = '666666'  # TODO: Удалить после тестирования
         if expected_code == confirmation_code:
             user.is_active = True
             user.save()
