@@ -15,7 +15,16 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
+
         read_only_fields = ('role',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        sender = self.context['request'].user
+        if isinstance(sender, User) and (
+            sender.is_superuser or sender.role == 'admin'
+        ):
+            self.fields['role'].read_only = False
 
     def validate_username(self, value):
         if value == 'me':

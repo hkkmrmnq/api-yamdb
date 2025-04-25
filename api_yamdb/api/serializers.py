@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import datetime
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -9,34 +9,35 @@ from reviews.models import Category, Comment, Genre, Review, Title
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = '__all__'
+        fields = ('name', 'slug')
 
 
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Category.objects.all(),
-        required=True
+        queryset=Category.objects.all(), slug_field='slug'
     )
-
-    genres = serializers.SlugRelatedField(
-        slug_field='slug',
-        queryset=Genre.objects.all(),
-        many=True,
-        required=True
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(), slug_field='slug', many=True
     )
-
     rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = (
+            'id',
+            'name',
+            'year',
+            'category',
+            'genre',
+            'description',
+            'rating',
+        )
         read_only_fields = ('rating',)
 
     def get_rating(self, obj):
@@ -44,34 +45,64 @@ class TitleSerializer(serializers.ModelSerializer):
             reviews = obj.reviews.all()
             if reviews.exists():
                 return round(
-                    sum(review.score for review in reviews)
-                    / reviews.count())
+                    sum(review.score for review in reviews) / reviews.count()
+                )
             return 0
         except ZeroDivisionError:
             return 0
 
-    def validate(self, data):
-        if 'year' in data and data['year'] > timezone.now().year:
-            raise serializers.ValidationError(
-                "Год не может быть в будущем.")
-        return data
+    def validate_year(self, value):
+        if value > datetime.now().year:
+            raise serializers.ValidationError('Год не может быть в будущем.')
+        return value
+
+    def validate_genre(self, value):
+        if not value:
+            raise serializers.ValidationError('Необходимо указать жанр')
+        return value
+
+    def validate_category(self, value):
+        if not value:
+            raise serializers.ValidationError('Необходимо указать категорию')
+        return value
 
     def create(self, validated_data):
-        genres_data = validated_data.pop('genres')
+        genres_data = validated_data.pop('genre')
         title = Title.objects.create(**validated_data)
-        title.genres.set(genres_data)
+        title.genre.set(genres_data)
         return title
 
     def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            if attr == 'genres':
-                instance.genres.set(value)
-            elif attr == 'category':
-                setattr(instance, attr, value)
-            else:
-                setattr(instance, attr, value)
-        instance.save()
+        genres = validated_data.pop('genre', None)
+        instance.name = validated_data.get('name', instance.name)
+        instance.year = validated_data.get('year', instance.year)
+        instance.description = validated_data.get(
+            'description', instance.description
+        )
+        instance.category = validated_data.get('category', instance.category)
+        if genres is not None:
+            instance.genre.set(genres)
         return instance
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['category'] = CategorySerializer(instance.category).data
+        representation['genre'] = GenreSerializer(
+            instance.genre.all(), many=True
+        ).data
+        return representation
+
+
+class CurrentTitleDefault:
+    """Получает id Произведения из URL"""
+
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        return serializer_field.context['view'].kwargs['title_id']
+
+    def __repr__(self):
+        return '%s()' % self.__class__.__name__
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -80,11 +111,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         default=serializers.CurrentUserDefault(),
     )
+    title = serializers.HiddenField(
+        default=CurrentTitleDefault(),
+    )
 
     class Meta:
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
         model = Review
-        read_only_fields = ('title',)
+        read_only_fields = ('author', 'title', 'pub_date')
         validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
@@ -96,8 +130,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username',
-        default=serializers.CurrentUserDefault()
+        read_only=True,
+        slug_field='username',
+        default=serializers.CurrentUserDefault(),
     )
 
     class Meta:
