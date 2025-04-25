@@ -41,15 +41,12 @@ class TitleSerializer(serializers.ModelSerializer):
         read_only_fields = ('rating',)
 
     def get_rating(self, obj):
-        try:
-            reviews = obj.reviews.all()
-            if reviews.exists():
-                return round(
-                    sum(review.score for review in reviews) / reviews.count()
-                )
-            return 0
-        except ZeroDivisionError:
-            return 0
+        reviews = obj.reviews.all()
+        if reviews.exists():
+            return round(
+                sum(review.score for review in reviews) / reviews.count()
+            )
+        return None
 
     def validate_year(self, value):
         if value > datetime.now().year:

@@ -1,6 +1,8 @@
+import django_filters
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets
+from rest_framework import status
+from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
@@ -8,6 +10,7 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
 )
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from .permissions import AdminLevelOrReadOnly, OwnerOrModeratorLevelOrReadOnly
 from .serializers import (
@@ -24,24 +27,41 @@ class CategoryViewSet(
     CreateModelMixin,
     DestroyModelMixin,
     ListModelMixin,
-    viewsets.GenericViewSet,
+    GenericViewSet,
 ):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminLevelOrReadOnly,)
     lookup_field = 'slug'
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', 'slug')
 
 
 class GenreViewSet(
     CreateModelMixin,
     DestroyModelMixin,
     ListModelMixin,
-    viewsets.GenericViewSet,
+    GenericViewSet,
 ):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (AdminLevelOrReadOnly,)
     lookup_field = 'slug'
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', 'slug')
+
+
+class TitleFilter(django_filters.FilterSet):
+    genre = django_filters.CharFilter(
+        field_name='genre__slug', lookup_expr='exact'
+    )
+    category = django_filters.CharFilter(
+        field_name='category__slug', lookup_expr='exact'
+    )
+
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'category', 'genre')
 
 
 class TitleViewSet(
@@ -49,7 +69,7 @@ class TitleViewSet(
     DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
-    viewsets.GenericViewSet,
+    GenericViewSet,
 ):
     """
     ViewSet для работы с произведениями
@@ -58,8 +78,8 @@ class TitleViewSet(
     queryset = Title.objects.all()
     permission_classes = (AdminLevelOrReadOnly,)
     serializer_class = TitleSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filterset_fields = ('year', 'category__slug', 'genre__slug')
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filterset_class = TitleFilter
     search_fields = ('name', 'description')
 
     def partial_update(self, request, *args, **kwargs):
@@ -67,9 +87,10 @@ class TitleViewSet(
         serializer = self.get_serializer(
             instance, data=request.data, partial=True
         )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            serializer.save().save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReviewViewSet(
@@ -77,7 +98,7 @@ class ReviewViewSet(
     DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
-    viewsets.GenericViewSet,
+    GenericViewSet,
 ):
     """Обрабатывает операции CRUD для модели Review."""
 
@@ -110,7 +131,7 @@ class CommentViewSet(
     DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
-    viewsets.GenericViewSet,
+    GenericViewSet,
 ):
     """Обрабатывает операции CRUD для модели Comment."""
 
