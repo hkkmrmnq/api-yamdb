@@ -21,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         sender = self.context['request'].user
-        if isinstance(sender, User) and (
+        if sender.is_authenticated and (
             sender.is_superuser or sender.role == 'admin'
         ):
             self.fields['role'].read_only = False

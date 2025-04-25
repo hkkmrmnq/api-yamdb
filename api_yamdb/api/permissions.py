@@ -20,13 +20,6 @@ class AdminLevel(BasePermission):
         )
 
 
-class SuperuserLevel(BasePermission):
-    """Доступно только суперпользователям."""
-
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_superuser
-
-
 class AdminLevelOrReadOnly(BasePermission):
     """
     Просмотр не ограничен,
@@ -39,15 +32,6 @@ class AdminLevelOrReadOnly(BasePermission):
             request.user.is_authenticated
             and (request.user.role == 'admin' or request.user.is_superuser)
         )
-
-
-class Read(BasePermission):
-    """
-    Только чтение.
-    """
-
-    def has_permission(self, request, view):
-        return request.method in SAFE_METHODS
 
 
 class OwnerOrModeratorLevelOrReadOnly(BasePermission):
@@ -68,32 +52,3 @@ class OwnerOrModeratorLevelOrReadOnly(BasePermission):
                 request.user.is_superuser,
             )
         )
-
-
-class OwnerOrAdminLevelOrReadOnly(BasePermission):
-    """
-    Просмотр не ограничен,
-    редактирование/удаление доступно только
-    администраторам, суперпользователям и владельцам.
-    """
-
-    def has_permission(self, request, view):
-        return request.method in SAFE_METHODS or request.user.is_authenticated
-
-    def has_object_permission(self, request, view, obj):
-        return request.method in SAFE_METHODS or any(
-            (
-                obj.author == request.user,
-                request.user.role == 'admin',
-                request.user.is_superuser,
-            )
-        )
-
-
-class Owner(BasePermission):
-    """
-    Доступно только владельцам.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        return request.user.is_authenticated and obj.author == request.user
