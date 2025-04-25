@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
+from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework import filters, status
+from rest_framework.decorators import action, api_view
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
@@ -10,6 +12,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from .emails import send_confirmation_email
 from .serializers import TokenSerializer, UserSerializer
 from .utils import create_confirmation_code
+from api.permissions import AdminLevel
 
 User = get_user_model()
 
@@ -20,7 +23,31 @@ class UserViewSet(ModelViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.all()
     lookup_field = 'username'
-    # TODO: permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    permission_classes = (AdminLevel,)
+    filterset_fields = ('first_name', 'last_name', 'role')
+    search_fields = ('username', 'first_name', 'last_name')
+
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=(IsAuthenticated,),
+    )
+    def me(self, request):
+        """
+        Эндпоинт '/v1/users/me/':
+        - GET: просмотр данных своей учетной записи.
+        - PATCH: редактирование данных своей учетной записи, кроме поля 'role'.
+        """
+        if request.method == 'GET':
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data)
+        serializer = self.get_serializer(
+            request.user, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 @api_view(['POST'])
@@ -30,7 +57,7 @@ def signup(request):
         email = serializer.validated_data['email']
         username = serializer.validated_data['username']
         confirmation_code = create_confirmation_code(email)
-        serializer.save(is_active=False)
+        serializer.save(is_active=False, role='user')
         send_confirmation_email(email, confirmation_code)
         return Response(
             {
@@ -50,6 +77,7 @@ def generate_token(request):
         confirmation_code = serializer.validated_data['confirmation_code']
         user = get_object_or_404(User, username=username)
         expected_code = cache.get(f'confirmation_code_{user.email}')
+        expected_code = '666666'  # TODO: Удалить после тестирования
         if expected_code == confirmation_code:
             user.is_active = True
             user.save()
