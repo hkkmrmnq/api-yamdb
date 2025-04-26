@@ -1,7 +1,6 @@
 import django_filters
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -9,7 +8,6 @@ from rest_framework.mixins import (
     ListModelMixin,
     RetrieveModelMixin,
 )
-from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from .permissions import AdminLevelOrReadOnly, OwnerOrModeratorLevelOrReadOnly
@@ -21,6 +19,7 @@ from .serializers import (
     TitleSerializer,
 )
 from reviews.models import Category, Genre, Review, Title
+from users.mixins import PartialUpdateMixin
 
 
 class CategoryViewSet(
@@ -29,6 +28,8 @@ class CategoryViewSet(
     ListModelMixin,
     GenericViewSet,
 ):
+    """Вьюсет для работы с категориями."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminLevelOrReadOnly,)
@@ -43,6 +44,8 @@ class GenreViewSet(
     ListModelMixin,
     GenericViewSet,
 ):
+    """Вьюсет для работы с жанрами."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (AdminLevelOrReadOnly,)
@@ -52,6 +55,8 @@ class GenreViewSet(
 
 
 class TitleFilter(django_filters.FilterSet):
+    """Filterset для возможности фильтрации произведений по идентификатору."""
+
     genre = django_filters.CharFilter(
         field_name='genre__slug', lookup_expr='exact'
     )
@@ -69,10 +74,11 @@ class TitleViewSet(
     DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
+    PartialUpdateMixin,
     GenericViewSet,
 ):
     """
-    ViewSet для работы с произведениями
+    Вьюсет для работы с произведениями.
     """
 
     queryset = Title.objects.all()
@@ -82,37 +88,19 @@ class TitleViewSet(
     filterset_class = TitleFilter
     search_fields = ('name', 'description')
 
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=True
-        )
-        if serializer.is_valid():
-            serializer.save().save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class ReviewViewSet(
     CreateModelMixin,
     DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
+    PartialUpdateMixin,
     GenericViewSet,
 ):
-    """Обрабатывает операции CRUD для модели Review."""
+    """Вьюсет для работы с отзывами."""
 
     serializer_class = ReviewSerializer
     permission_classes = (OwnerOrModeratorLevelOrReadOnly,)
-
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs['title_id'])
@@ -131,21 +119,13 @@ class CommentViewSet(
     DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
+    PartialUpdateMixin,
     GenericViewSet,
 ):
-    """Обрабатывает операции CRUD для модели Comment."""
+    """Вьюсет для работы с комментариями."""
 
     serializer_class = CommentSerializer
     permission_classes = (OwnerOrModeratorLevelOrReadOnly,)
-
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def get_review(self):
         title = get_object_or_404(Title, id=self.kwargs['title_id'])

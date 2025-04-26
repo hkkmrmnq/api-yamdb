@@ -7,18 +7,24 @@ from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор для категорий."""
+
     class Meta:
         model = Category
         fields = ('name', 'slug')
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор для жанров."""
+
     class Meta:
         model = Genre
         fields = ('name', 'slug')
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Сериализатор для произведений."""
+
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(), slug_field='slug'
     )
@@ -91,7 +97,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class CurrentTitleDefault:
-    """Получает id Произведения из URL"""
+    """Получает ID Произведения из URL"""
 
     requires_context = True
 
@@ -103,6 +109,8 @@ class CurrentTitleDefault:
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для отзывов."""
+
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
@@ -126,6 +134,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор для комментариев."""
+
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username',
