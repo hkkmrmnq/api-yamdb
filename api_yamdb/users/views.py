@@ -17,6 +17,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .emails import send_confirmation_email
+from .mixins import PartialUpdateMixin
 from .serializers import TokenSerializer, UserSerializer
 from .utils import create_confirmation_code
 from api.permissions import AdminLevel
@@ -29,6 +30,7 @@ class UserViewSet(
     DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
+    PartialUpdateMixin,
     GenericViewSet,
 ):
     """Вьюсет для модели пользователя."""
@@ -40,16 +42,6 @@ class UserViewSet(
     permission_classes = (AdminLevel,)
     filterset_fields = ('first_name', 'last_name', 'role')
     search_fields = ('username', 'first_name', 'last_name')
-
-    def partial_update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=True
-        )
-        if serializer.is_valid():
-            serializer.save().save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,
