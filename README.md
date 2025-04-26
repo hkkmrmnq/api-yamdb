@@ -68,12 +68,6 @@ cd api_yamdb
 py manage.py migrate
 ```
 
-Запустить проект:
-
-```shell
-py manage.py runserver
-```
-
 Опционально. Импортировать тестовые данные командами в следующем порядке:
 
 ```shell
@@ -84,4 +78,10 @@ py manage.py import_csv_titles static\data\titles.csv
 py manage.py import_csv_genre_title static\data\genre_title.csv
 py manage.py import_csv_review static\data\review.csv
 py manage.py static\data\comments.csv
+```
+
+Запустить проект:
+
+```shell
+py manage.py runserver
 ```
