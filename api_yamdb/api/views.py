@@ -1,19 +1,106 @@
+import django_filters
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+)
+from rest_framework.viewsets import GenericViewSet
 
-from reviews.models import Review
-from .permissions import IsAuthorOrReadOnly
-from .serializers import ReviewSerializer, CommentSerializer
+from .permissions import AdminLevelOrReadOnly, OwnerOrModeratorLevelOrReadOnly
+from .serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    TitleSerializer,
+)
+from reviews.models import Category, Genre, Review, Title
+from users.mixins import PartialUpdateMixin
 
 
-from reviews.models import Title
+class CategoryViewSet(
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    GenericViewSet,
+):
+    """Вьюсет для работы с категориями."""
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (AdminLevelOrReadOnly,)
+    lookup_field = 'slug'
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', 'slug')
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
-    """Обрабатывает операции CRUD для модели Review."""
+class GenreViewSet(
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    GenericViewSet,
+):
+    """Вьюсет для работы с жанрами."""
+
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (AdminLevelOrReadOnly,)
+    lookup_field = 'slug'
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', 'slug')
+
+
+class TitleFilter(django_filters.FilterSet):
+    """Filterset для возможности фильтрации произведений по идентификатору."""
+
+    genre = django_filters.CharFilter(
+        field_name='genre__slug', lookup_expr='exact'
+    )
+    category = django_filters.CharFilter(
+        field_name='category__slug', lookup_expr='exact'
+    )
+
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'category', 'genre')
+
+
+class TitleViewSet(
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    PartialUpdateMixin,
+    GenericViewSet,
+):
+    """
+    Вьюсет для работы с произведениями.
+    """
+
+    queryset = Title.objects.all()
+    permission_classes = (AdminLevelOrReadOnly,)
+    serializer_class = TitleSerializer
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filterset_class = TitleFilter
+    search_fields = ('name', 'description')
+
+
+class ReviewViewSet(
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    PartialUpdateMixin,
+    GenericViewSet,
+):
+    """Вьюсет для работы с отзывами."""
 
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (OwnerOrModeratorLevelOrReadOnly,)
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs['title_id'])
@@ -27,17 +114,24 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
-    """Обрабатывает операции CRUD для модели Comment."""
+class CommentViewSet(
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    PartialUpdateMixin,
+    GenericViewSet,
+):
+    """Вьюсет для работы с комментариями."""
+
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthorOrReadOnly,)
+    permission_classes = (OwnerOrModeratorLevelOrReadOnly,)
 
     def get_review(self):
         title = get_object_or_404(Title, id=self.kwargs['title_id'])
         return get_object_or_404(
-            Review,
-            id=self.kwargs.get('review_id'),
-            title=title)
+            Review, id=self.kwargs.get('review_id'), title=title
+        )
 
     def get_queryset(self):
         review = self.get_review()
@@ -45,7 +139,4 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         review = self.get_review()
-        serializer.save(
-            author=self.request.user,
-            review=review
-        )
+        serializer.save(author=self.request.user, review=review)

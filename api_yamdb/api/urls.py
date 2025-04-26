@@ -5,7 +5,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .views import ReviewViewSet, CommentViewSet
 
 
-
 v1_router = DefaultRouter()
 v1_router.register(
     r'titles/(?P<title_id>\d+)/reviews', ReviewViewSet, basename='review'
@@ -13,7 +12,7 @@ v1_router.register(
 v1_router.register(
     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentViewSet,
-    basename='comment'
+    basename='comment',
 )
 
 urlpatterns = [
