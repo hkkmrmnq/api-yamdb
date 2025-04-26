@@ -73,3 +73,15 @@ py manage.py migrate
 ```shell
 py manage.py runserver
 ```
+
+Опционально. Импортировать тестовые данные командами в следующем порядке:
+
+```shell
+py manage.py import_csv_users static\data\users.csv
+py manage.py import_csv_category static\data\category.csv
+py manage.py import_csv_genre static\data\genre.csv
+py manage.py import_csv_titles static\data\titles.csv
+py manage.py import_csv_genre_title static\data\genre_title.csv
+py manage.py import_csv_review static\data\review.csv
+py manage.py static\data\comments.csv
+```
