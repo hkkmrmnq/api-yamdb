@@ -10,7 +10,7 @@ def validate_username(username):
     """
     allowed_pattern = r'[\w.@+-]'
 
-    non_matching_characters = re.sub(allowed_pattern, "", username)
+    non_matching_characters = re.sub(allowed_pattern, '', username)
 
     if non_matching_characters:
         formatted_invalid_chars = ", ".join(

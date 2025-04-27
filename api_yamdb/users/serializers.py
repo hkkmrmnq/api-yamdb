@@ -28,12 +28,12 @@ class UserSerializer(serializers.ModelSerializer):
         ):
             self.fields['role'].read_only = False
 
-    def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError(
-                '"me" - недопустимое имя пользователя.'
-            )
-        return value
+    # def validate_username(self, value):
+    #     if value == 'me':
+    #         raise serializers.ValidationError(
+    #             '"me" - недопустимое имя пользователя.'
+    #         )
+    #     return value
 
 
 class TokenSerializer(serializers.Serializer):
