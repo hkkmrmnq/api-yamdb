@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -50,7 +52,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=255, verbose_name='Наименование')
-    year = models.IntegerField(verbose_name='Год')
+    year = models.SmallIntegerField(verbose_name='Год')
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
@@ -75,6 +77,13 @@ class Title(models.Model):
                 name='unique_name_category_year',
             )
         ]
+
+    def clean(self):
+        current_year = timezone.now().year
+        if self.year > current_year:
+            raise ValidationError(
+                f'Год не может быть больше текущего {current_year}.'
+            )
 
     def __str__(self):
         return self.name
