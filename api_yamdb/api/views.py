@@ -1,4 +1,3 @@
-import django_filters
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
@@ -19,6 +18,8 @@ from .serializers import (
     TitleSerializerReadOnly,
     TitleSerializerWrite,
 )
+
+from .filters import TitleFilter
 from reviews.models import Category, Genre, Review, Title
 
 
@@ -48,21 +49,6 @@ class GenreViewSet(CategoryGenreBaseViewSet):
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-
-
-class TitleFilter(django_filters.FilterSet):
-    """Filterset для возможности фильтрации произведений по идентификатору."""
-
-    genre = django_filters.CharFilter(
-        field_name='genre__slug', lookup_expr='exact'
-    )
-    category = django_filters.CharFilter(
-        field_name='category__slug', lookup_expr='exact'
-    )
-
-    class Meta:
-        model = Title
-        fields = ('name', 'year', 'category', 'genre')
 
 
 class TitleViewSet(ModelViewSet):
