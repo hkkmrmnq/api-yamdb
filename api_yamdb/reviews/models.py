@@ -1,10 +1,8 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 
 from .constants import LIMIT_LENGTH, LIMIT_LENGTH_STR_AND_SLUG
-
+from .validators import validate_year
 
 User = get_user_model()
 
@@ -64,7 +62,10 @@ class Title(models.Model):
         max_length=LIMIT_LENGTH,
         verbose_name='Наименование'
     )
-    year = models.SmallIntegerField(verbose_name='Год')
+    year = models.SmallIntegerField(
+        verbose_name='Год',
+        validators=[validate_year]
+    )
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
@@ -89,13 +90,6 @@ class Title(models.Model):
                 name='unique_name_category_year',
             )
         ]
-
-    def clean(self):
-        current_year = timezone.now().year
-        if self.year > current_year:
-            raise ValidationError(
-                f'Год не может быть больше текущего {current_year}.'
-            )
 
     def __str__(self):
         return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
@@ -125,7 +119,8 @@ class GenreTitle(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.title[:LIMIT_LENGTH_STR_AND_SLUG]} - {self.genre[:LIMIT_LENGTH_STR_AND_SLUG]}'
+        return (f'{self.title[:LIMIT_LENGTH_STR_AND_SLUG]}'
+                '- {self.genre[:LIMIT_LENGTH_STR_AND_SLUG]}')
 
 
 class Review(models.Model):
