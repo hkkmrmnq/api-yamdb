@@ -67,24 +67,6 @@ class TitleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Необходимо указать категорию')
         return value
 
-    def create(self, validated_data):
-        genres_data = validated_data.pop('genre')
-        title = Title.objects.create(**validated_data)
-        title.genre.set(genres_data)
-        return title
-
-    def update(self, instance, validated_data):
-        genres = validated_data.pop('genre', None)
-        instance.name = validated_data.get('name', instance.name)
-        instance.year = validated_data.get('year', instance.year)
-        instance.description = validated_data.get(
-            'description', instance.description
-        )
-        instance.category = validated_data.get('category', instance.category)
-        if genres is not None:
-            instance.genre.set(genres)
-        return instance
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['category'] = CategorySerializer(instance.category).data
