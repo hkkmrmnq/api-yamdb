@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from .utils import CurrentTitleDefault
 from reviews.models import Category, Comment, Genre, Review, Title
+
+User = get_user_model()
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -113,3 +116,35 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели пользователя."""
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+
+        read_only_fields = ('role',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        sender = self.context['request'].user
+        if sender.is_authenticated and (
+            sender.is_superuser or sender.role == 'admin'
+        ):
+            self.fields['role'].read_only = False
+
+
+class TokenSerializer(serializers.Serializer):
+    """Сериализатор для получения токена."""
+
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)
