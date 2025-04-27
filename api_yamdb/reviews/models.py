@@ -7,7 +7,12 @@ from .validators import validate_year
 User = get_user_model()
 
 
-class Category(models.Model):
+class CategoryGenreBaseModel(models.Model):
+    """
+    Абстрактная модель.
+    Добавляет к моделям Category и Genre поля:
+    наименование и идентификатор. 
+    """
     name = models.CharField(
         max_length=LIMIT_LENGTH,
         unique=True,
@@ -24,6 +29,12 @@ class Category(models.Model):
     )
 
     class Meta:
+        abstract = True
+
+
+class Category(CategoryGenreBaseModel):
+
+    class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
         ordering = ('name',)
@@ -32,21 +43,7 @@ class Category(models.Model):
         return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
-class Genre(models.Model):
-    name = models.CharField(
-        max_length=LIMIT_LENGTH,
-        unique=True,
-        verbose_name='Наименование'
-    )
-    slug = models.SlugField(
-        max_length=LIMIT_LENGTH_STR_AND_SLUG,
-        unique=True,
-        verbose_name='Идентификатор',
-        help_text=(
-            'Идентификатор страницы для URL; разрешены '
-            'символы латиницы, цифры, дефис и подчёркивание.'
-        ),
-    )
+class Genre(CategoryGenreBaseModel):
 
     class Meta:
         verbose_name = 'жанр'
