@@ -2,14 +2,27 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .validators import validate_username
+from reviews.constants import LIMIT_LENGTH_STR_AND_SLUG
+
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
 
     class Role(models.TextChoices):
-        USER = 'user', _('Пользователь')
-        MODERATOR = 'moderator', _('Модератор')
-        ADMIN = 'admin', _('Администратор')
+        USER = 'user', 'Пользователь'
+        MODERATOR = 'moderator', 'Модератор'
+        ADMIN = 'admin', 'Администратор'
+
+    username = models.CharField(
+        verbose_name='Имя пользователя',
+        max_length=LIMIT_LENGTH_STR_AND_SLUG,
+        unique=True,
+        validators=[validate_username],
+        error_messages={
+            'unique': _('A user with that username already exists.'),
+        },
+    )
 
     role = models.CharField(
         verbose_name='Роль',
