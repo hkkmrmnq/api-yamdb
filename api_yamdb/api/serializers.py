@@ -49,9 +49,7 @@ class TitleSerializer(serializers.ModelSerializer):
     def get_rating(self, obj):
         reviews = obj.reviews.all()
         if reviews.exists():
-            return round(
-                sum(review.score for review in reviews) / reviews.count()
-            )
+            return round(obj.rating)
         return None
 
     def validate_year(self, value):
