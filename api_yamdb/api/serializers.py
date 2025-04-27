@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -68,11 +66,6 @@ class TitleSerializerWrite(serializers.ModelSerializer):
             'genre',
             'description',
         )
-
-    def validate_year(self, value):
-        if value > datetime.now().year:
-            raise serializers.ValidationError('Год не может быть в будущем.')
-        return value
 
     def to_representation(self, instance):
         return TitleSerializerReadOnly(instance).data
