@@ -1,5 +1,6 @@
 import django_filters
 from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
@@ -81,7 +82,9 @@ class TitleViewSet(
     Вьюсет для работы с произведениями.
     """
 
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+            rating=Avg('reviews__score')
+        )
     permission_classes = (AdminLevelOrReadOnly,)
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
