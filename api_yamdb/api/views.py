@@ -21,7 +21,6 @@ from .serializers import (
     TitleSerializerWrite,
 )
 from reviews.models import Category, Genre, Review, Title
-from users.mixins import PartialUpdateMixin
 
 
 class CategoryGenreViewSet(
@@ -68,7 +67,7 @@ class TitleFilter(django_filters.FilterSet):
 
 
 class TitleViewSet(ModelViewSet):
-    """Вьюсет для работы с произведени."""
+    """Вьюсет для работы с произведениями."""
 
     queryset = (
         Title.objects.all()
