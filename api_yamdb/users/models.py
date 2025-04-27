@@ -1,28 +1,21 @@
-from enum import Enum
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-
-class Role(Enum):
-    USER = 'user'
-    MODERATOR = 'moderator'
-    ADMIN = 'admin'
+from django.utils.translation import gettext_lazy as _
 
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
 
-    ROLE_CHOICES = [
-        (Role.USER.value, 'Пользователь'),
-        (Role.MODERATOR.value, 'Модератор'),
-        (Role.ADMIN.value, 'Администратор'),
-    ]
+    class Role(models.TextChoices):
+        USER = 'user', _('Пользователь')
+        MODERATOR = 'moderator', _('Модератор')
+        ADMIN = 'admin', _('Администратор')
+
     role = models.CharField(
         verbose_name='Роль',
         max_length=50,
-        choices=ROLE_CHOICES,
-        default=Role.USER.value,
+        choices=Role,
+        default=Role.USER,
     )
     email = models.EmailField(
         verbose_name='Адрес электронной почты', max_length=254, unique=True
