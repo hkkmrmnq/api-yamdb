@@ -11,7 +11,9 @@ User = get_user_model()
 
 class Category(models.Model):
     name = models.CharField(
-        max_length=LIMIT_LENGTH, unique=True, verbose_name='Наименование'
+        max_length=LIMIT_LENGTH,
+        unique=True,
+        verbose_name='Наименование'
     )
     slug = models.SlugField(
         max_length=LIMIT_LENGTH_SLUG,
@@ -34,7 +36,9 @@ class Category(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(
-        max_length=LIMIT_LENGTH, unique=True, verbose_name='Наименование'
+        max_length=LIMIT_LENGTH,
+        unique=True,
+        verbose_name='Наименование'
     )
     slug = models.SlugField(
         max_length=LIMIT_LENGTH_SLUG,
@@ -56,7 +60,10 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=LIMIT_LENGTH, verbose_name='Наименование')
+    name = models.CharField(
+        max_length=LIMIT_LENGTH,
+        verbose_name='Наименование'
+    )
     year = models.SmallIntegerField(verbose_name='Год')
     category = models.ForeignKey(
         Category,
