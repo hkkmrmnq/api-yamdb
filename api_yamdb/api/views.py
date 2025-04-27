@@ -9,7 +9,7 @@ from rest_framework.mixins import (
     ListModelMixin,
     RetrieveModelMixin,
 )
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from .permissions import AdminLevelOrReadOnly, OwnerOrModeratorLevelOrReadOnly
 from .serializers import (
@@ -17,7 +17,8 @@ from .serializers import (
     CommentSerializer,
     GenreSerializer,
     ReviewSerializer,
-    TitleSerializer,
+    TitleSerializerReadOnly,
+    TitleSerializerWrite,
 )
 from reviews.models import Category, Genre, Review, Title
 from users.mixins import PartialUpdateMixin
@@ -70,17 +71,8 @@ class TitleFilter(django_filters.FilterSet):
         fields = ('name', 'year', 'category', 'genre')
 
 
-class TitleViewSet(
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-    PartialUpdateMixin,
-    GenericViewSet,
-):
-    """
-    Вьюсет для работы с произведениями.
-    """
+class TitleViewSet(ModelViewSet):
+    """Вьюсет для работы с произведениями."""
 
     queryset = (
         Title.objects.all()
@@ -88,10 +80,16 @@ class TitleViewSet(
         .order_by('year', 'name')
     )
     permission_classes = (AdminLevelOrReadOnly,)
-    serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_class = TitleFilter
+    ordering_fields = ('id', 'name', 'year')
+    http_method_names = ('get', 'post', 'patch', 'delete')
     search_fields = ('name', 'description')
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'partial_update'):
+            return TitleSerializerWrite
+        return TitleSerializerReadOnly
 
 
 class ReviewViewSet(

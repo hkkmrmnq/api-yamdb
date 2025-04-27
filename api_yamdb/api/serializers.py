@@ -22,16 +22,41 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
+class TitleSerializerReadOnly(serializers.ModelSerializer):
+    """Сериализатор данных модели произведения для чтения."""
+
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True)
+    rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
+
+    def get_rating(self, obj):
+        reviews = obj.reviews.all()
+        if reviews.exists():
+            return round(obj.rating)
+        return None
+
+
+class TitleSerializerWrite(serializers.ModelSerializer):
     """Сериализатор для произведений."""
 
     category = serializers.SlugRelatedField(
-        queryset=Category.objects.all(), slug_field='slug'
+        queryset=Category.objects.all(),
+        slug_field='slug',
+        required=True
     )
     genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(), slug_field='slug', many=True
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        many=True,
+        allow_null=False,
+        allow_empty=False
     )
-    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -42,38 +67,15 @@ class TitleSerializer(serializers.ModelSerializer):
             'category',
             'genre',
             'description',
-            'rating',
         )
-        read_only_fields = ('rating',)
-
-    def get_rating(self, obj):
-        reviews = obj.reviews.all()
-        if reviews.exists():
-            return round(obj.rating)
-        return None
 
     def validate_year(self, value):
         if value > datetime.now().year:
             raise serializers.ValidationError('Год не может быть в будущем.')
         return value
 
-    def validate_genre(self, value):
-        if not value:
-            raise serializers.ValidationError('Необходимо указать жанр')
-        return value
-
-    def validate_category(self, value):
-        if not value:
-            raise serializers.ValidationError('Необходимо указать категорию')
-        return value
-
     def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['category'] = CategorySerializer(instance.category).data
-        representation['genre'] = GenreSerializer(
-            instance.genre.all(), many=True
-        ).data
-        return representation
+        return TitleSerializerReadOnly(instance).data
 
 
 class CurrentTitleDefault:
