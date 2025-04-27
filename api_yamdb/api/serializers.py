@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
+from .utils import CurrentTitleDefault
 from reviews.models import Category, Comment, Genre, Review, Title
 
 
@@ -30,7 +31,13 @@ class TitleSerializerReadOnly(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+            'id',
+            'name',
+            'year',
+            'rating',
+            'description',
+            'genre',
+            'category',
         )
 
     def get_rating(self, obj):
@@ -44,16 +51,14 @@ class TitleSerializerWrite(serializers.ModelSerializer):
     """Сериализатор для произведений."""
 
     category = serializers.SlugRelatedField(
-        queryset=Category.objects.all(),
-        slug_field='slug',
-        required=True
+        queryset=Category.objects.all(), slug_field='slug', required=True
     )
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
         slug_field='slug',
         many=True,
         allow_null=False,
-        allow_empty=False
+        allow_empty=False,
     )
 
     class Meta:
@@ -69,18 +74,6 @@ class TitleSerializerWrite(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return TitleSerializerReadOnly(instance).data
-
-
-class CurrentTitleDefault:
-    """Получает ID Произведения из URL"""
-
-    requires_context = True
-
-    def __call__(self, serializer_field):
-        return serializer_field.context['view'].kwargs['title_id']
-
-    def __repr__(self):
-        return '%s()' % self.__class__.__name__
 
 
 class ReviewSerializer(serializers.ModelSerializer):
