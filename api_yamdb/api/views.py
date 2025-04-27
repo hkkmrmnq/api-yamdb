@@ -24,36 +24,32 @@ from reviews.models import Category, Genre, Review, Title
 from users.mixins import PartialUpdateMixin
 
 
-class CategoryViewSet(
+class CategoryGenreViewSet(
     CreateModelMixin,
     DestroyModelMixin,
     ListModelMixin,
     GenericViewSet,
 ):
+    """Базовый Вьюсет для работы с категориями и жанрами"""
+
+    permission_classes = (AdminLevelOrReadOnly,)
+    lookup_field = 'slug'
+    filter_backends = (SearchFilter,)
+    search_fields = ('name', 'slug')
+
+
+class CategoryViewSet(CategoryGenreViewSet):
     """Вьюсет для работы с категориями."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AdminLevelOrReadOnly,)
-    lookup_field = 'slug'
-    filter_backends = (SearchFilter,)
-    search_fields = ('name', 'slug')
 
 
-class GenreViewSet(
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin,
-    GenericViewSet,
-):
+class GenreViewSet(CategoryGenreViewSet):
     """Вьюсет для работы с жанрами."""
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (AdminLevelOrReadOnly,)
-    lookup_field = 'slug'
-    filter_backends = (SearchFilter,)
-    search_fields = ('name', 'slug')
 
 
 class TitleFilter(django_filters.FilterSet):
@@ -72,7 +68,7 @@ class TitleFilter(django_filters.FilterSet):
 
 
 class TitleViewSet(ModelViewSet):
-    """Вьюсет для работы с произведениями."""
+    """Вьюсет для работы с произведени."""
 
     queryset = (
         Title.objects.all()
@@ -92,18 +88,12 @@ class TitleViewSet(ModelViewSet):
         return TitleSerializerReadOnly
 
 
-class ReviewViewSet(
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-    PartialUpdateMixin,
-    GenericViewSet,
-):
+class ReviewViewSet(ModelViewSet):
     """Вьюсет для работы с отзывами."""
 
     serializer_class = ReviewSerializer
     permission_classes = (OwnerOrModeratorLevelOrReadOnly,)
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs['title_id'])
@@ -117,18 +107,12 @@ class ReviewViewSet(
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-    PartialUpdateMixin,
-    GenericViewSet,
-):
+class CommentViewSet(ModelViewSet):
     """Вьюсет для работы с комментариями."""
 
     serializer_class = CommentSerializer
     permission_classes = (OwnerOrModeratorLevelOrReadOnly,)
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_review(self):
         return get_object_or_404(
