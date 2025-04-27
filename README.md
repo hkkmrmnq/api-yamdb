@@ -13,7 +13,7 @@
 
 ### Технологии:
 
-- Python 3.13.2
+- Python 3.10.0
 - Django
 - Django REST Framework
 - SimpleJWT
