@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from .constants import LIMIT_LENGTH, LIMIT_LENGTH_SLUG
+from .constants import LIMIT_LENGTH, LIMIT_LENGTH_STR_AND_SLUG
 
 
 User = get_user_model()
@@ -16,7 +16,7 @@ class Category(models.Model):
         verbose_name='Наименование'
     )
     slug = models.SlugField(
-        max_length=LIMIT_LENGTH_SLUG,
+        max_length=LIMIT_LENGTH_STR_AND_SLUG,
         unique=True,
         verbose_name='Идентификатор',
         help_text=(
@@ -30,8 +30,8 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
         ordering = ('name',)
 
-    def __str__(self):
-        return self.name
+    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
+        return self.name[:max_length]
 
 
 class Genre(models.Model):
@@ -41,7 +41,7 @@ class Genre(models.Model):
         verbose_name='Наименование'
     )
     slug = models.SlugField(
-        max_length=LIMIT_LENGTH_SLUG,
+        max_length=LIMIT_LENGTH_STR_AND_SLUG,
         unique=True,
         verbose_name='Идентификатор',
         help_text=(
@@ -55,8 +55,8 @@ class Genre(models.Model):
         verbose_name_plural = 'Жанры'
         ordering = ('name',)
 
-    def __str__(self):
-        return self.name
+    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
+        return self.name[:max_length]
 
 
 class Title(models.Model):
@@ -97,8 +97,8 @@ class Title(models.Model):
                 f'Год не может быть больше текущего {current_year}.'
             )
 
-    def __str__(self):
-        return self.name
+    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
+        return self.name[:max_length]
 
 
 class GenreTitle(models.Model):
@@ -124,8 +124,8 @@ class GenreTitle(models.Model):
             )
         ]
 
-    def __str__(self):
-        return f'{self.title} - {self.genre}'
+    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
+        return f'{self.title[:max_length]} - {self.genre[:max_length]}'
 
 
 class Review(models.Model):
@@ -160,8 +160,8 @@ class Review(models.Model):
             )
         ]
 
-    def __str__(self):
-        return self.text
+    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
+        return self.text[:max_length]
 
 
 class Comment(models.Model):
@@ -187,5 +187,5 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
         ordering = ('-pub_date',)
 
-    def __str__(self):
-        return self.text
+    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
+        return self.text[:max_length]
