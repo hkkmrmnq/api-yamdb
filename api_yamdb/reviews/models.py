@@ -30,8 +30,8 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
         ordering = ('name',)
 
-    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
-        return self.name[:max_length]
+    def __str__(self):
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Genre(models.Model):
@@ -55,8 +55,8 @@ class Genre(models.Model):
         verbose_name_plural = 'Жанры'
         ordering = ('name',)
 
-    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
-        return self.name[:max_length]
+    def __str__(self):
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Title(models.Model):
@@ -97,8 +97,8 @@ class Title(models.Model):
                 f'Год не может быть больше текущего {current_year}.'
             )
 
-    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
-        return self.name[:max_length]
+    def __str__(self):
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class GenreTitle(models.Model):
@@ -124,8 +124,8 @@ class GenreTitle(models.Model):
             )
         ]
 
-    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
-        return f'{self.title[:max_length]} - {self.genre[:max_length]}'
+    def __str__(self):
+        return f'{self.title[:LIMIT_LENGTH_STR_AND_SLUG]} - {self.genre[:LIMIT_LENGTH_STR_AND_SLUG]}'
 
 
 class Review(models.Model):
@@ -160,8 +160,8 @@ class Review(models.Model):
             )
         ]
 
-    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
-        return self.text[:max_length]
+    def __str__(self):
+        return self.text[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Comment(models.Model):
@@ -187,5 +187,5 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
         ordering = ('-pub_date',)
 
-    def __str__(self, max_length=LIMIT_LENGTH_STR_AND_SLUG):
-        return self.text[:max_length]
+    def __str__(self):
+        return self.text[:LIMIT_LENGTH_STR_AND_SLUG]
