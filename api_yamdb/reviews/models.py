@@ -3,14 +3,18 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
+from .constants import LIMIT_LENGTH, LIMIT_LENGTH_SLUG
+
+
 User = get_user_model()
 
 
 class Category(models.Model):
     name = models.CharField(
-        max_length=255, unique=True, verbose_name='Наименование'
+        max_length=LIMIT_LENGTH, unique=True, verbose_name='Наименование'
     )
     slug = models.SlugField(
+        max_length=LIMIT_LENGTH_SLUG,
         unique=True,
         verbose_name='Идентификатор',
         help_text=(
@@ -30,9 +34,10 @@ class Category(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(
-        max_length=255, unique=True, verbose_name='Наименование'
+        max_length=LIMIT_LENGTH, unique=True, verbose_name='Наименование'
     )
     slug = models.SlugField(
+        max_length=LIMIT_LENGTH_SLUG,
         unique=True,
         verbose_name='Идентификатор',
         help_text=(
@@ -51,7 +56,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=255, verbose_name='Наименование')
+    name = models.CharField(max_length=LIMIT_LENGTH, verbose_name='Наименование')
     year = models.SmallIntegerField(verbose_name='Год')
     category = models.ForeignKey(
         Category,
