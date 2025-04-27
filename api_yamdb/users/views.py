@@ -5,19 +5,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action, api_view
-from rest_framework.mixins import (
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .emails import send_confirmation_email
-from .mixins import PartialUpdateMixin
 from .serializers import TokenSerializer, UserSerializer
 from .utils import create_confirmation_code
 from api.permissions import AdminLevel
@@ -25,16 +18,10 @@ from api.permissions import AdminLevel
 User = get_user_model()
 
 
-class UserViewSet(
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-    PartialUpdateMixin,
-    GenericViewSet,
-):
+class UserViewSet(ModelViewSet):
     """Вьюсет для модели пользователя."""
 
+    http_method_names = ('get', 'post', 'patch', 'delete')
     serializer_class = UserSerializer
     queryset = User.objects.all()
     lookup_field = 'username'
