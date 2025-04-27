@@ -82,9 +82,11 @@ class TitleViewSet(
     Вьюсет для работы с произведениями.
     """
 
-    queryset = Title.objects.all().annotate(
-            rating=Avg('reviews__score')
-        )
+    queryset = (
+        Title.objects.all()
+        .annotate(rating=Avg('reviews__score'))
+        .order_by('year', 'name')
+    )
     permission_classes = (AdminLevelOrReadOnly,)
     serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend, SearchFilter)
@@ -132,7 +134,9 @@ class CommentViewSet(
 
     def get_review(self):
         return get_object_or_404(
-            Review, id=self.kwargs.get('review_id'), title_id=self.kwargs['title_id']
+            Review,
+            id=self.kwargs.get('review_id'),
+            title_id=self.kwargs['title_id'],
         )
 
     def get_queryset(self):
