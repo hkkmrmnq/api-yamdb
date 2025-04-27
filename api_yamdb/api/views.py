@@ -131,9 +131,8 @@ class CommentViewSet(
     permission_classes = (OwnerOrModeratorLevelOrReadOnly,)
 
     def get_review(self):
-        title = get_object_or_404(Title, id=self.kwargs['title_id'])
         return get_object_or_404(
-            Review, id=self.kwargs.get('review_id'), title=title
+            Review, id=self.kwargs.get('review_id'), title_id=self.kwargs['title_id']
         )
 
     def get_queryset(self):
