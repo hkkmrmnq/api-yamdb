@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from .constants import LIMIT_LENGTH, LIMIT_LENGTH_SLUG
+from .constants import LIMIT_LENGTH, LIMIT_LENGTH_STR_AND_SLUG
 
 
 User = get_user_model()
@@ -16,7 +16,7 @@ class Category(models.Model):
         verbose_name='Наименование'
     )
     slug = models.SlugField(
-        max_length=LIMIT_LENGTH_SLUG,
+        max_length=LIMIT_LENGTH_STR_AND_SLUG,
         unique=True,
         verbose_name='Идентификатор',
         help_text=(
@@ -31,7 +31,7 @@ class Category(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Genre(models.Model):
@@ -41,7 +41,7 @@ class Genre(models.Model):
         verbose_name='Наименование'
     )
     slug = models.SlugField(
-        max_length=LIMIT_LENGTH_SLUG,
+        max_length=LIMIT_LENGTH_STR_AND_SLUG,
         unique=True,
         verbose_name='Идентификатор',
         help_text=(
@@ -56,7 +56,7 @@ class Genre(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Title(models.Model):
@@ -98,7 +98,7 @@ class Title(models.Model):
             )
 
     def __str__(self):
-        return self.name
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class GenreTitle(models.Model):
@@ -125,7 +125,7 @@ class GenreTitle(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.title} - {self.genre}'
+        return f'{self.title[:LIMIT_LENGTH_STR_AND_SLUG]} - {self.genre[:LIMIT_LENGTH_STR_AND_SLUG]}'
 
 
 class Review(models.Model):
@@ -161,7 +161,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text
+        return self.text[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Comment(models.Model):
@@ -188,4 +188,4 @@ class Comment(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.text
+        return self.text[:LIMIT_LENGTH_STR_AND_SLUG]
