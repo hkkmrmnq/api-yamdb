@@ -1,16 +1,6 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
-class ModeratorLevel(BasePermission):
-    """Доступно модераторам, администраторам и суперпользователям."""
-
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.role in ('moderator', 'admin')
-            or request.user.is_superuser
-        )
-
-
 class AdminLevel(BasePermission):
     """Доступном администраторам и суперпользователям."""
 
