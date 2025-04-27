@@ -23,7 +23,7 @@ from .serializers import (
 from reviews.models import Category, Genre, Review, Title
 
 
-class CategoryGenreViewSet(
+class CategoryGenreBaseViewSet(
     CreateModelMixin,
     DestroyModelMixin,
     ListModelMixin,
@@ -37,14 +37,14 @@ class CategoryGenreViewSet(
     search_fields = ('name', 'slug')
 
 
-class CategoryViewSet(CategoryGenreViewSet):
+class CategoryViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для работы с категориями."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(CategoryGenreViewSet):
+class GenreViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для работы с жанрами."""
 
     queryset = Genre.objects.all()
