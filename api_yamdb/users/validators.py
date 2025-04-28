@@ -7,8 +7,10 @@ from reviews.constants import USERNAME_MAX_LENGTH
 def validate_username(username):
     """
     Валидатор для username.
-    Проверка на соответствие ^[\w.@+-]+\Z
-    и запрет использования 'me' в качестве username.
+    Проверка на соответствие правилам:
+    - разрешены только латинские буквы, цифры и символы:
+    ., @, +, -, _
+    - запрещено использование 'me' в качестве username.
     """
     allowed_pattern = r'[\w.@+-]'
 

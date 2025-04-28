@@ -11,7 +11,7 @@ class CategoryGenreBaseModel(models.Model):
     """
     Абстрактная модель.
     Добавляет к моделям Category и Genre поля:
-    наименование и идентификатор. 
+    наименование и идентификатор.
     """
     name = models.CharField(
         max_length=LIMIT_LENGTH,
