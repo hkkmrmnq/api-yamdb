@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError
 import re
 
+from reviews.constants import USERNAME_MAX_LENGTH
+
 
 def validate_username(username):
     """
@@ -22,4 +24,11 @@ def validate_username(username):
     elif username == "me":
         raise ValidationError(
             "Использовать 'me' в качестве username запрещено."
+        )
+    elif len(username) > USERNAME_MAX_LENGTH:
+        raise ValidationError(
+            (
+                'Длина username не должна превышать '
+                f'{USERNAME_MAX_LENGTH} символов.'
+            )
         )

@@ -1,9 +1,15 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
+from .emails import send_confirmation_email
 from .utils import CurrentTitleDefault
+from reviews.constants import EMAIL_MAX_LENGTH
 from reviews.models import Category, Comment, Genre, Review, Title
+from users.validators import validate_username
 
 User = get_user_model()
 
@@ -118,8 +124,8 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели пользователя."""
+class AdiminUserSerializer(serializers.ModelSerializer):
+    """Админский сериализатор для работы с объектами пользователя."""
 
     class Meta:
         model = User
@@ -132,19 +138,71 @@ class UserSerializer(serializers.ModelSerializer):
             'role',
         )
 
+
+class UserSerializer(AdiminUserSerializer):
+    """Пользовательский сериализатор для работы с объектами пользователя."""
+
+    class Meta(AdiminUserSerializer.Meta):
         read_only_fields = ('role',)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        sender = self.context['request'].user
-        if sender.is_authenticated and (
-            sender.is_superuser or sender.role == 'admin'
-        ):
-            self.fields['role'].read_only = False
+
+class SignUpSerializer(serializers.Serializer):
+    """Сериализатор для регистрации пользователя."""
+
+    username = serializers.CharField(
+        required=True, validators=[validate_username]
+    )
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        if len(value) > EMAIL_MAX_LENGTH:
+            raise serializers.ValidationError(
+                'Длина email не должна превышать 254 символа'
+            )
+        return value
+
+    def validate(self, data):
+        if User.objects.filter(
+            (Q(username=data['username']) & ~Q(email=data['email']))
+            | (Q(email=data['email']) & ~Q(username=data['username']))
+        ).exists():
+            raise serializers.ValidationError(
+                'Пользователь с таким email/username уже существует'
+            )
+        return data
+
+    def create(self, validated_data):
+        user, created = User.objects.get_or_create(
+            username=validated_data['username'],
+            email=validated_data['email'],
+        )
+        user.is_active = False
+        user.save()
+        account_activation_token = default_token_generator.make_token(user)
+        send_confirmation_email(user.email, account_activation_token)
+        return user
 
 
 class TokenSerializer(serializers.Serializer):
     """Сериализатор для получения токена."""
 
-    username = serializers.CharField(required=True)
+    username = serializers.CharField(
+        required=True, validators=[validate_username]
+    )
     confirmation_code = serializers.CharField(required=True)
+
+    def validate(self, data):
+        user = get_object_or_404(User, username=data['username'])
+        if not default_token_generator.check_token(
+            user, data['confirmation_code']
+        ):
+            raise serializers.ValidationError(
+                'Токен для активации недействителен.'
+            )
+        return data
+
+    def create(self, validated_data):
+        user = get_object_or_404(User, username=validated_data['username'])
+        user.is_active = True
+        user.save()
+        return user

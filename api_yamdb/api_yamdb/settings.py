@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta  # TODO: REMOVE
 
 from dotenv import load_dotenv
 
@@ -129,3 +130,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_PASSWORD = os.getenv('DEFAULT_EMAIL_PASSWORD')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+}

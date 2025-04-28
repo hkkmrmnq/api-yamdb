@@ -2,13 +2,16 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 
-def send_confirmation_email(email, confirmation_code):
+def send_confirmation_email(email, accoun_activation_token):
     """
     Отправляет письмо с кодом подтверждения
     на указанный адрес электронной почты.
     """
-    subject = 'Ваш код подтверждения для регистрации на Yamdb'
-    message = f'Ваш код подтверждения: {confirmation_code}'
+    subject = 'Токен для активации аккунта на Yamdb'
+    message = (
+        'Токен для активации Вашего '
+        f'аккунта на Yamdb: {accoun_activation_token}'
+    )
     recipient_list = [email]
 
     send_mail(
