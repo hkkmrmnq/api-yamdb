@@ -1,14 +1,25 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from .constants import LIMIT_LENGTH, LIMIT_LENGTH_STR_AND_SLUG
+from .validators import validate_year
+
 User = get_user_model()
 
 
-class Category(models.Model):
+class CategoryGenreBaseModel(models.Model):
+    """
+    Абстрактная модель.
+    Добавляет к моделям Category и Genre поля:
+    наименование и идентификатор. 
+    """
     name = models.CharField(
-        max_length=255, unique=True, verbose_name='Наименование'
+        max_length=LIMIT_LENGTH,
+        unique=True,
+        verbose_name='Наименование'
     )
     slug = models.SlugField(
+        max_length=LIMIT_LENGTH_STR_AND_SLUG,
         unique=True,
         verbose_name='Идентификатор',
         help_text=(
@@ -16,6 +27,12 @@ class Category(models.Model):
             'символы латиницы, цифры, дефис и подчёркивание.'
         ),
     )
+
+    class Meta:
+        abstract = True
+
+
+class Category(CategoryGenreBaseModel):
 
     class Meta:
         verbose_name = 'категория'
@@ -23,21 +40,10 @@ class Category(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
-class Genre(models.Model):
-    name = models.CharField(
-        max_length=255, unique=True, verbose_name='Наименование'
-    )
-    slug = models.SlugField(
-        unique=True,
-        verbose_name='Идентификатор',
-        help_text=(
-            'Идентификатор страницы для URL; разрешены '
-            'символы латиницы, цифры, дефис и подчёркивание.'
-        ),
-    )
+class Genre(CategoryGenreBaseModel):
 
     class Meta:
         verbose_name = 'жанр'
@@ -45,12 +51,18 @@ class Genre(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=255, verbose_name='Наименование')
-    year = models.IntegerField(verbose_name='Год')
+    name = models.CharField(
+        max_length=LIMIT_LENGTH,
+        verbose_name='Наименование'
+    )
+    year = models.SmallIntegerField(
+        verbose_name='Год',
+        validators=[validate_year]
+    )
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
@@ -68,7 +80,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'произведение'
         verbose_name_plural = 'Произведения'
-        ordering = ('id',)
+        ordering = ('year', 'name')
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'category', 'year'],
@@ -77,7 +89,7 @@ class Title(models.Model):
         ]
 
     def __str__(self):
-        return self.name
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class GenreTitle(models.Model):
@@ -104,7 +116,8 @@ class GenreTitle(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.title} - {self.genre}'
+        return (f'{self.title[:LIMIT_LENGTH_STR_AND_SLUG]}'
+                '- {self.genre[:LIMIT_LENGTH_STR_AND_SLUG]}')
 
 
 class Review(models.Model):
@@ -140,7 +153,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text
+        return self.text[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Comment(models.Model):
@@ -167,4 +180,4 @@ class Comment(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.text
+        return self.text[:LIMIT_LENGTH_STR_AND_SLUG]

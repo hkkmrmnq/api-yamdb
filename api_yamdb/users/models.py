@@ -1,28 +1,34 @@
-from enum import Enum
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
-
-class Role(Enum):
-    USER = 'user'
-    MODERATOR = 'moderator'
-    ADMIN = 'admin'
+from .validators import validate_username
+from reviews.constants import LIMIT_LENGTH_STR_AND_SLUG
 
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
 
-    ROLE_CHOICES = [
-        (Role.USER.value, 'Пользователь'),
-        (Role.MODERATOR.value, 'Модератор'),
-        (Role.ADMIN.value, 'Администратор'),
-    ]
+    class Role(models.TextChoices):
+        USER = 'user', 'Пользователь'
+        MODERATOR = 'moderator', 'Модератор'
+        ADMIN = 'admin', 'Администратор'
+
+    username = models.CharField(
+        verbose_name='Имя пользователя',
+        max_length=LIMIT_LENGTH_STR_AND_SLUG,
+        unique=True,
+        validators=[validate_username],
+        error_messages={
+            'unique': _('A user with that username already exists.'),
+        },
+    )
+
     role = models.CharField(
         verbose_name='Роль',
-        max_length=50,
-        choices=ROLE_CHOICES,
-        default=Role.USER.value,
+        max_length=max([len(role[0]) for role in Role.choices]),
+        choices=Role,
+        default=Role.USER,
     )
     email = models.EmailField(
         verbose_name='Адрес электронной почты', max_length=254, unique=True
@@ -36,6 +42,14 @@ class CustomUser(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
+
+    @property
+    def is_admin(self):
+        return self.role == self.Role.ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role == self.Role.MODERATOR
 
     def __str__(self):
         return self.username

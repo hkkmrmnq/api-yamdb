@@ -9,11 +9,11 @@
 Модераторы. Редактирование/удаление любых отзывов/комментариев.
 Администраторы. Редактирование/удаление любых отзывов/комментариев. Добавление/редактирование/удаление произвеедений, жанров и категорий. Добавление/редактирование/удаление пользователей.
 
-Полная [документация (Redoc)](http://127.0.0.1:8000/redoc/#tag/USERS/operation/%D0%94%D0%BE%D0%B1%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5%20%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8F).
+Полная [документация (Redoc)](http://127.0.0.1:8000/redoc/).
 
 ### Технологии:
 
-- Python 3.13.2
+- Python 3.10.0
 - Django
 - Django REST Framework
 - SimpleJWT
@@ -68,16 +68,10 @@ cd api_yamdb
 py manage.py migrate
 ```
 
-Опционально. Импортировать тестовые данные командами в следующем порядке:
+Опционально. Импортировать тестовые данные:
 
 ```shell
-py manage.py import_csv_users static\data\users.csv
-py manage.py import_csv_category static\data\category.csv
-py manage.py import_csv_genre static\data\genre.csv
-py manage.py import_csv_titles static\data\titles.csv
-py manage.py import_csv_genre_title static\data\genre_title.csv
-py manage.py import_csv_review static\data\review.csv
-py manage.py static\data\comments.csv
+py manage.py import_data_from_csv
 ```
 
 Запустить проект:
