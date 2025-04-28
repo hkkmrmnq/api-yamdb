@@ -45,7 +45,7 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
 
-    @property
+    @property  # добавил is_staff в permissions
     def is_admin(self):
         return self.role == self.Role.ADMIN
 
