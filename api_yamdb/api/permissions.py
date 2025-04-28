@@ -1,8 +1,8 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
-class AdminLevel(BasePermission):  # TODO: CHANGE
-    """Доступном администраторам и суперпользователям."""
+class AdminLevel(BasePermission):
+    """Доступном администраторам, персоналу (is_staff) и суперпользователям."""
 
     def has_permission(self, request, view):
         return request.user.is_authenticated and any((
@@ -16,7 +16,7 @@ class AdminLevelOrReadOnly(BasePermission):
     """
     Просмотр не ограничен,
     редактирование/удаление доступно только
-    администраторам и суперпользователям.
+    администраторам, персоналу (is_staff) и суперпользователям.
     """
 
     def has_permission(self, request, view):
@@ -34,7 +34,8 @@ class OwnerOrModeratorLevelOrReadOnly(BasePermission):
     """
     Просмотр не ограничен,
     редактирование/удаление доступно только
-    модкраторам, администраторам, суперпользователям и владельцам.
+    владельцам,
+    модераторам, персоналу (is_staff), администраторам, суперпользователям.
     """
 
     def has_permission(self, request, view):
