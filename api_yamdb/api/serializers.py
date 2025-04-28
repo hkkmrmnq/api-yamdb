@@ -87,14 +87,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username',
         default=serializers.CurrentUserDefault(),
     )
-    title = serializers.HiddenField(
-        default=CurrentTitleDefault(),
+    title = serializers.PrimaryKeyRelatedField(
+        read_only=True, default=CurrentTitleDefault()
     )
 
     class Meta:
         fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
         model = Review
-        read_only_fields = ('author', 'title', 'pub_date')
+        read_only_fields = ('author', 'pub_date')
         validators = [
             UniqueTogetherValidator(
                 queryset=Review.objects.all(),
