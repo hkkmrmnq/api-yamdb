@@ -10,24 +10,16 @@ User = get_user_model()
 
 class Category(CategoryGenreBaseModel):
 
-    class Meta:
+    class Meta(CategoryGenreBaseModel.Meta):
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
-        ordering = ('name',)
-
-    def __str__(self):
-        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Genre(CategoryGenreBaseModel):
 
-    class Meta:
+    class Meta(CategoryGenreBaseModel.Meta):
         verbose_name = 'жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ('name',)
-
-    def __str__(self):
-        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Title(models.Model):

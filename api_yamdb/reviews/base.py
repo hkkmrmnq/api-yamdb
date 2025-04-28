@@ -26,3 +26,7 @@ class CategoryGenreBaseModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
