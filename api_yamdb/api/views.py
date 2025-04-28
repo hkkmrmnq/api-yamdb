@@ -41,10 +41,10 @@ User = get_user_model()
 
 
 class CategoryGenreBaseViewSet(
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin,
-    GenericViewSet,
+        CreateModelMixin,
+        DestroyModelMixin,
+        ListModelMixin,
+        GenericViewSet,
 ):
     """Базовый Вьюсет для работы с категориями и жанрами"""
 
