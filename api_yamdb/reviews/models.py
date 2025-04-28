@@ -2,56 +2,24 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from .constants import LIMIT_LENGTH, LIMIT_LENGTH_STR_AND_SLUG
+from .base import CategoryGenreBaseModel
 from .validators import validate_year
 
 User = get_user_model()
 
 
-class CategoryGenreBaseModel(models.Model):
-    """
-    Абстрактная модель.
-    Добавляет к моделям Category и Genre поля:
-    наименование и идентификатор.
-    """
-    name = models.CharField(
-        max_length=LIMIT_LENGTH,
-        unique=True,
-        verbose_name='Наименование'
-    )
-    slug = models.SlugField(
-        max_length=LIMIT_LENGTH_STR_AND_SLUG,
-        unique=True,
-        verbose_name='Идентификатор',
-        help_text=(
-            'Идентификатор страницы для URL; разрешены '
-            'символы латиницы, цифры, дефис и подчёркивание.'
-        ),
-    )
-
-    class Meta:
-        abstract = True
-
-
 class Category(CategoryGenreBaseModel):
 
-    class Meta:
+    class Meta(CategoryGenreBaseModel.Meta):
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
-        ordering = ('name',)
-
-    def __str__(self):
-        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Genre(CategoryGenreBaseModel):
 
-    class Meta:
+    class Meta(CategoryGenreBaseModel.Meta):
         verbose_name = 'жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ('name',)
-
-    def __str__(self):
-        return self.name[:LIMIT_LENGTH_STR_AND_SLUG]
 
 
 class Title(models.Model):

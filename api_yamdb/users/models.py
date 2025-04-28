@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .validators import validate_username
-from reviews.constants import LIMIT_LENGTH_STR_AND_SLUG
+from reviews.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 
 
 class CustomUser(AbstractUser):
@@ -16,7 +16,7 @@ class CustomUser(AbstractUser):
 
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=LIMIT_LENGTH_STR_AND_SLUG,
+        max_length=USERNAME_MAX_LENGTH,
         unique=True,
         validators=[validate_username],
         error_messages={
@@ -31,7 +31,9 @@ class CustomUser(AbstractUser):
         default=Role.USER,
     )
     email = models.EmailField(
-        verbose_name='Адрес электронной почты', max_length=254, unique=True
+        verbose_name='Адрес электронной почты',
+        max_length=EMAIL_MAX_LENGTH,
+        unique=True
     )
     bio = models.TextField(
         verbose_name='Биография',
@@ -43,7 +45,7 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
 
-    @property
+    @property  # добавил is_staff в permissions
     def is_admin(self):
         return self.role == self.Role.ADMIN
 

@@ -24,14 +24,14 @@ class Command(BaseCommand):
         )
 
     def _import_category(self, row):
-        Genre.objects.create(
+        Category.objects.create(
             pk=row['id'],
             name=row['name'],
             slug=row['slug'],
         )
 
     def _import_genre(self, row):
-        Category.objects.create(
+        Genre.objects.create(
             pk=row['id'],
             name=row['name'],
             slug=row['slug'],
