@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from rest_framework_simplejwt.tokens import AccessToken
 
 from .emails import send_confirmation_email
 from .utils import CurrentTitleDefault
@@ -35,7 +36,7 @@ class TitleSerializerReadOnly(serializers.ModelSerializer):
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True)
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(default=None)
 
     class Meta:
         model = Title
@@ -152,14 +153,7 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         required=True, validators=[validate_username]
     )
-    email = serializers.EmailField(required=True)
-
-    def validate_email(self, value):
-        if len(value) > EMAIL_MAX_LENGTH:
-            raise serializers.ValidationError(
-                'Длина email не должна превышать 254 символа'
-            )
-        return value
+    email = serializers.EmailField(required=True, max_length=EMAIL_MAX_LENGTH)
 
     def validate(self, data):
         if User.objects.filter(
@@ -202,7 +196,10 @@ class TokenSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
+        """
+        Активирует аккаунт и возвращает токен доступа.
+        """
         user = get_object_or_404(User, username=validated_data['username'])
         user.is_active = True
         user.save()
-        return user
+        return AccessToken.for_user(user)

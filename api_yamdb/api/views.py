@@ -3,7 +3,7 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import action, api_view
 from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
@@ -13,9 +13,7 @@ from rest_framework.mixins import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-from rest_framework_simplejwt.tokens import AccessToken
 
-# from .emails import send_confirmation_email
 from .filters import TitleFilter
 from .permissions import (
     AdminLevel,
@@ -143,22 +141,27 @@ class UserViewSet(ModelViewSet):
     filterset_fields = ('first_name', 'last_name', 'role')
     search_fields = ('username', 'first_name', 'last_name')
 
-
-@api_view(['GET', 'PATCH'])
-@permission_classes([IsAuthenticated])
-def me(request):
-    """
-    Эндпоинт '/v1/users/me/':
-    - GET: просмотр данных своей учетной записи.
-    - PATCH: редактирование данных своей учетной записи, кроме поля 'role'.
-    """
-    if request.method == 'GET':
-        serializer = UserSerializer(request.user)
+    @action(
+        methods=('get', 'patch'),
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+        url_path='me',
+    )
+    def me(self, request):
+        """
+        Эндпоинт '/v1/users/me/':
+        - GET: просмотр данных своей учетной записи.
+        - PATCH: редактирование данных своей учетной записи, кроме поля 'role'.
+        """
+        if request.method == 'GET':
+            serializer = UserSerializer(request.user)
+            return Response(serializer.data)
+        serializer = UserSerializer(
+            request.user, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
-    serializer = UserSerializer(request.user, data=request.data, partial=True)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    return Response(serializer.data)
 
 
 @api_view(['POST'])
@@ -173,6 +176,5 @@ def signup(request):
 def activate_account(request):
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = serializer.save()
-    access_token = AccessToken.for_user(user)
+    access_token = serializer.save()
     return Response({'token': str(access_token)}, status=status.HTTP_200_OK)
