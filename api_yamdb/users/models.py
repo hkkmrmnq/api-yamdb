@@ -3,10 +3,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .validators import validate_username
-from reviews.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
+from api_yamdb.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     """Кастомная модель пользователя."""
 
     class Role(models.TextChoices):
@@ -45,9 +45,13 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
 
-    @property  # добавил is_staff в permissions
+    @property
     def is_admin(self):
-        return self.role == self.Role.ADMIN
+        return any((
+            (self.role == self.Role.ADMIN),
+            self.is_staff,
+            self.is_superuser,
+        ))
 
     @property
     def is_moderator(self):
