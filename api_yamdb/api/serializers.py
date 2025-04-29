@@ -6,10 +6,10 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api_yamdb.constants import EMAIL_MAX_LENGTH
 from .emails import send_confirmation_email
 from .mixins import UsernameFieldMixin
 from .utils import CurrentTitleDefault
-from reviews.constants import EMAIL_MAX_LENGTH
 from reviews.models import Category, Comment, Genre, Review, Title
 
 User = get_user_model()

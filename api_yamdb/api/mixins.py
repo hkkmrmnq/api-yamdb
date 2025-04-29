@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from reviews.constants import USERNAME_MAX_LENGTH
+from api_yamdb.constants import USERNAME_MAX_LENGTH
 from users.validators import validate_username
 
 
